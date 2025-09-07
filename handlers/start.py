@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import CommandStart
 from static.texts import WELCOME_TEXT
-# from utils.keyboards import get_main_keyboard
+from utils.keyboards import choose_action_kb
 
 router = Router()
 
@@ -11,5 +11,5 @@ router = Router()
 async def cmd_start(message: Message) -> None:
     await message.answer(
         WELCOME_TEXT,
-        # reply_markup=get_main_keyboard()
+        reply_markup=choose_action_kb
     )

@@ -1,15 +1,28 @@
 from aiogram import Router, F
 from aiogram.types import Message
+from aiogram.fsm.context import FSMContext
 from services.image_processor import ImageProcessor
 from services.food_analyzer_service import FoodAnalyzer
+from static.texts import SCAN_PRODUCT_COMPOSITION_TEXT
+from utils.states import MainGroup
 
 router = Router()
 image_processor = ImageProcessor()
 food_analyzer = FoodAnalyzer()
 
 
-@router.message(F.photo)
-async def analyze_food_composition(message: Message) -> None:    
+@router.message(F.text == SCAN_PRODUCT_COMPOSITION_TEXT)
+async def message_before_analyze(message: Message, state: FSMContext) -> None:
+    await state.set_state(MainGroup.analyze_product_composition_state)
+    await message.answer("Отправь фотографию состава для разбора")
+    
+
+@router.message(MainGroup.analyze_product_composition_state)
+async def analyze_food_composition(message: Message, state: FSMContext) -> None:
+    if not message.photo:
+        await message.answer("Отправьте фото состава")
+        return    
+        
     status_message = await message.answer("🔍 Разбираю состав...")
     
     base64_image = await image_processor.process_telegram_photo(message=message)
@@ -22,6 +35,8 @@ async def analyze_food_composition(message: Message) -> None:
         formatted_response,
         parse_mode='HTML'
     )
+    
+    await state.clear()
 
 def format_analysis_response(response_data: dict) -> str:
     """Форматирует ответ анализа в красивое сообщение"""
