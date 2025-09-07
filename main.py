@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher
-from handlers import start, product_composition
+from handlers import start, product_composition, count_calories
 from config import config
 
 
@@ -11,6 +11,7 @@ async def main() -> None:
     
     dp.include_router(start.router)
     dp.include_router(product_composition.router)
+    dp.include_router(count_calories.router)
     
     logging.basicConfig(
         filename='logs.log',

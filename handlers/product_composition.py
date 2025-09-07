@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from services.image_processor import ImageProcessor
 from services.food_analyzer_service import FoodAnalyzer
 from static.texts import SCAN_PRODUCT_COMPOSITION_TEXT
+from utils.keyboards import choose_action_kb
 from utils.states import MainGroup
 
 router = Router()
@@ -33,7 +34,8 @@ async def analyze_food_composition(message: Message, state: FSMContext) -> None:
     
     await message.answer(
         formatted_response,
-        parse_mode='HTML'
+        parse_mode='HTML',
+        reply_markup=choose_action_kb
     )
     
     await state.clear()
