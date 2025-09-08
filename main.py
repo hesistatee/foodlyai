@@ -3,6 +3,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from handlers import start, product_composition, count_calories
 from config import config
+from database.database import database
 
 
 async def main() -> None:
@@ -20,6 +21,7 @@ async def main() -> None:
     )
     
     try:
+        await database.init_db()
         await dp.start_polling(bot)
     finally:
         await bot.session.close()

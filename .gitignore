@@ -218,3 +218,4 @@ __marimo__/
 temp
 test.py
 *.png
+*.db

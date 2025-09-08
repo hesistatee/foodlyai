@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from services.image_processor import ImageProcessor
 from services.food_analyzer_service import FoodAnalyzer
 from static.texts import SCAN_PRODUCT_COMPOSITION_TEXT
+from database.repositories import user_repository
 from utils.keyboards import choose_action_kb
 from utils.states import MainGroup
 
@@ -14,6 +15,15 @@ food_analyzer = FoodAnalyzer()
 
 @router.message(F.text == SCAN_PRODUCT_COMPOSITION_TEXT)
 async def message_before_analyze(message: Message, state: FSMContext) -> None:
+    user = await user_repository.get_user(telegram_id=message.from_user.id)
+    
+    if not user:
+        await message.answer("👋 Привет! Кажется, мы еще не знакомы.\nДля начала работы воспользуйтесь командой /start")
+        return
+    elif not await user_repository.check_subscription(user=user) and not user.is_admin:
+        await message.answer("⚠️ Ваша подписка завершилась\n\nЧтобы продолжить пользоваться всеми возможностями, пожалуйста, продлите подписку 💫")
+        return
+    
     await state.set_state(MainGroup.analyze_product_composition_state)
     await message.answer("Отправь фотографию состава для разбора")
     

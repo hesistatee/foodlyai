@@ -6,6 +6,7 @@ from services.food_analyzer_service import FoodAnalyzer
 from static.texts import COUNT_THE_NUMBER_OF_CALORIES_TEXT
 from utils.states import MainGroup
 from utils.keyboards import choose_action_kb
+from database.repositories import user_repository
 
 router = Router()
 image_processor = ImageProcessor()
@@ -14,6 +15,15 @@ food_analyzer = FoodAnalyzer()
 
 @router.message(F.text == COUNT_THE_NUMBER_OF_CALORIES_TEXT)
 async def message_before_count(message: Message, state: FSMContext):
+    user = await user_repository.get_user(telegram_id=message.from_user.id)
+    
+    if not user:
+        await message.answer("👋 Привет! Кажется, мы еще не знакомы.\nДля начала работы воспользуйтесь командой /start")
+        return
+    elif not await user_repository.check_subscription(user=user) and not user.is_admin:
+        await message.answer("⚠️ Ваша подписка завершилась\n\nЧтобы продолжить пользоваться всеми возможностями, пожалуйста, продлите подписку 💫")
+        return
+        
     await state.set_state(MainGroup.count_the_number_of_calories_state)
     await message.answer("Отправь фото блюда")
     
