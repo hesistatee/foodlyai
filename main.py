@@ -3,6 +3,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from handlers import start, product_composition, count_calories
 from config import config
+from database.db_middleware import DBSessionMiddleware
 from database.database import database
 
 
@@ -10,9 +11,13 @@ async def main() -> None:
     bot = Bot(token=config.BOT_TOKEN)
     dp = Dispatcher()
     
+    dp.update.middleware(DBSessionMiddleware())
+    
     dp.include_router(start.router)
     dp.include_router(product_composition.router)
     dp.include_router(count_calories.router)
+    
+    dp['session'] = database.get_db()
     
     logging.basicConfig(
         filename='logs.log',

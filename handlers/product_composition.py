@@ -4,9 +4,10 @@ from aiogram.fsm.context import FSMContext
 from services.image_processor import ImageProcessor
 from services.food_analyzer_service import FoodAnalyzer
 from static.texts import SCAN_PRODUCT_COMPOSITION_TEXT
-from database.repositories import user_repository
+from database.repositories import UserRepository
 from utils.keyboards import choose_action_kb
 from utils.states import MainGroup
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = Router()
 image_processor = ImageProcessor()
@@ -14,13 +15,15 @@ food_analyzer = FoodAnalyzer()
 
 
 @router.message(F.text == SCAN_PRODUCT_COMPOSITION_TEXT)
-async def message_before_analyze(message: Message, state: FSMContext) -> None:
-    user = await user_repository.get_user(telegram_id=message.from_user.id)
+async def message_before_analyze(message: Message, session: AsyncSession, state: FSMContext) -> None:
+    tg_id = message.from_user.id
+    repo = UserRepository(session=session)
+    user = await repo.get_user(tg_id)
     
     if not user:
         await message.answer("👋 Привет! Кажется, мы еще не знакомы.\nДля начала работы воспользуйтесь командой /start")
         return
-    elif not await user_repository.check_subscription(user=user) and not user.is_admin:
+    elif not await repo.check_subscription_active(telegram_id=tg_id) and not user.is_admin:
         await message.answer("⚠️ Ваша подписка завершилась\n\nЧтобы продолжить пользоваться всеми возможностями, пожалуйста, продлите подписку 💫")
         return
     
@@ -29,10 +32,15 @@ async def message_before_analyze(message: Message, state: FSMContext) -> None:
     
 
 @router.message(MainGroup.analyze_product_composition_state)
-async def analyze_food_composition(message: Message, state: FSMContext) -> None:
+async def analyze_food_composition(message: Message, session: AsyncSession, state: FSMContext) -> None:
     if not message.photo:
         await message.answer("Отправьте фото состава")
-        return    
+        return
+    
+    repo = UserRepository(session=session)
+    
+    user = await repo.get_user(telegram_id=message.from_user.id)
+    user.number_of_requests += 1
         
     status_message = await message.answer("🔍 Разбираю состав...")
     

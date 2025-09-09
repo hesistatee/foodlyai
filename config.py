@@ -15,6 +15,9 @@ class Config:
     # GPT settings
     GPT_MODEL: str = os.getenv('GPT_MODEL')
     GPT_MAX_TOKENS: int = int(os.getenv('GPT_MAX_TOKENS', 1000))
-
+    
+    # Subscription
+    TRIAL_DAYS: int = int(os.getenv('TRIAL_DAYS'))
+    MAIN_SUBSCRIPTION_DAYS: int = int(os.getenv("MAIN_SUBSCRIPTION_DAYS"))
 
 config = Config()
