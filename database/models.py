@@ -1,11 +1,22 @@
 from datetime import datetime
+import enum
+from typing import List
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, DateTime, Boolean
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, DateTime, Boolean, ForeignKey, Enum, Text
 
 Base = declarative_base()
 
 
+class OrderStatus(enum.Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    FAILED = "failed"
+
+class PaymentMethod(enum.Enum):
+    STARS = "stars"
+    
 class User(Base):
     __tablename__ = "users"
     
@@ -21,6 +32,8 @@ class User(Base):
     
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     
+    orders: Mapped[List["Order"]] = relationship("Order", back_populates="user")
+    
     
     def is_subscription_active(self) -> bool:
         if not self.has_subscription:
@@ -30,3 +43,42 @@ class User(Base):
             return False
         return datetime.now() < self.subscription_end
     
+class Tariff(Base):
+    __tablename__ = "tariffs"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(32))
+    description: Mapped[str] =  mapped_column(String(64))
+    price: Mapped[float]
+    payload: Mapped[str] = mapped_column(String(32))
+    days: Mapped[int]
+    
+    orders: Mapped[List["Order"]] = relationship("Order", back_populates="tarrif")
+
+class Order(Base):
+    __tablename__ = "orders"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    tariff_id: Mapped[int] = mapped_column(ForeignKey("tariffs.id"))
+    
+    amount: Mapped[float] = mapped_column(nullable=False)
+    status: Mapped[OrderStatus] = mapped_column(Enum(OrderStatus), default=OrderStatus.PENDING)
+    payment_method: Mapped[PaymentMethod] = mapped_column(Enum(PaymentMethod), nullable=True)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(), onupdate=datetime.now())
+    completed_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    
+    payment_id: Mapped[str] = mapped_column(String(128), nullable=True)
+    payment_details: Mapped[str] = mapped_column(Text, nullable=True)
+    
+    user: Mapped["User"] = relationship("User", back_populates="orders")
+    tarrif: Mapped["Tariff"] = relationship("Tariff", back_populates="orders")
+    
+    def is_completed(self) -> bool:
+        return self.status == OrderStatus.COMPLETED
+    
+    def mark_as_completed(self) -> None:
+        self.status = OrderStatus.COMPLETED
+        self.completed_at = datetime.now()

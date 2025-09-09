@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import CommandStart
 from static.texts import WELCOME_TEXT
-from utils.keyboards import choose_action_kb
+from utils.keyboards import choose_analyze_kb
 from database.repositories import UserRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 from config import config
@@ -25,5 +25,5 @@ async def cmd_start(message: Message, session: AsyncSession) -> None:
     await message.answer(
         WELCOME_TEXT,
         parse_mode='HTML',
-        reply_markup=choose_action_kb
+        reply_markup=choose_analyze_kb
     )

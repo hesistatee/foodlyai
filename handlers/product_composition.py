@@ -5,7 +5,7 @@ from services.image_processor import ImageProcessor
 from services.food_analyzer_service import FoodAnalyzer
 from static.texts import SCAN_PRODUCT_COMPOSITION_TEXT
 from database.repositories import UserRepository
-from utils.keyboards import choose_action_kb
+from utils.keyboards import choose_analyze_kb
 from utils.states import MainGroup
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -39,8 +39,7 @@ async def analyze_food_composition(message: Message, session: AsyncSession, stat
     
     repo = UserRepository(session=session)
     
-    user = await repo.get_user(telegram_id=message.from_user.id)
-    user.number_of_requests += 1
+    await repo.update_number_of_requests(telegram_id=message.from_user.id)
         
     status_message = await message.answer("🔍 Разбираю состав...")
     
@@ -53,7 +52,7 @@ async def analyze_food_composition(message: Message, session: AsyncSession, stat
     await message.answer(
         formatted_response,
         parse_mode='HTML',
-        reply_markup=choose_action_kb
+        reply_markup=choose_analyze_kb
     )
     
     await state.clear()

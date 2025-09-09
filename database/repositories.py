@@ -1,14 +1,15 @@
-from .models import User
+from .models import User, Tariff, Order, OrderStatus
 from datetime import datetime, timedelta
 from typing import Optional
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class UserRepository:
+class IRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
-        
+
+class UserRepository(IRepository):
     async def get_user(self, telegram_id: int) -> Optional[User]:
         """Получить пользователя по telegram_id"""
         result = await self.session.execute(
@@ -71,3 +72,55 @@ class UserRepository:
         if user:
             return user.is_subscription_active()
         return False
+    
+class TariffRepository(IRepository):
+    async def get_tariff(self, tariff_id: int) -> Optional[Tariff]:
+        result = await self.session.execute(
+            select(Tariff).where(Tariff.id == tariff_id)
+        )
+        return result.scalar_one_or_none()
+    
+class OrderRepository(IRepository):
+    async def get_order(self, order_id: int) -> Optional[Order]:
+        result = await self.session.execute(
+            select(Order).where(Order.id == order_id)
+        )
+        return result.scalar_one_or_none()
+    
+    async def create_order(
+        self,
+        user_id: int,
+        tariff_id: int,
+        payment_method: str,
+        amount: int
+    ) -> Optional[Order]:
+        order = Order(
+            user_id=user_id,
+            tariff_id=tariff_id,
+            payment_method=payment_method,
+            amount=amount
+        )
+        self.session.add(order)
+        await self.session.commit()
+        await self.session.refresh(order)
+        return order
+    
+    async def update_order_status(
+        self, 
+        order_id: int, 
+        status: OrderStatus,
+        payment_id: str = None,
+        payment_details: str = None
+    ) -> Optional[Order]:
+        order = await self.get_order(order_id)
+        if order:
+            order.status = status
+            if payment_id:
+                order.payment_id = payment_id
+            if payment_details:
+                order.payment_details = payment_details
+            if status == OrderStatus.COMPLETED:
+                order.completed_at = datetime.now()
+            self.session.commit()
+        return order
+        

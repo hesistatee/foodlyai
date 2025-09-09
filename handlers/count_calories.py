@@ -5,7 +5,7 @@ from services.image_processor import ImageProcessor
 from services.food_analyzer_service import FoodAnalyzer
 from static.texts import COUNT_THE_NUMBER_OF_CALORIES_TEXT
 from utils.states import MainGroup
-from utils.keyboards import choose_action_kb
+from utils.keyboards import choose_analyze_kb
 from database.repositories import UserRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,14 +31,13 @@ async def message_before_count(message: Message, session: AsyncSession, state: F
     await message.answer("Отправь фото блюда")
     
 @router.message(MainGroup.count_the_number_of_calories_state)
-async def analyze_food_composition(message: Message, session: AsyncSession, state: FSMContext) -> None:
+async def count_food_calories(message: Message, session: AsyncSession, state: FSMContext) -> None:
     if not message.photo:
         await message.answer("Отправьте фото блюда/продукта")
         return
     repo = UserRepository(session=session)
     
-    user = await repo.get_user(telegram_id=message.from_user.id)
-    user.number_of_requests += 1
+    await repo.update_number_of_requests(telegram_id=message.from_user.id)
         
     status_message = await message.answer("🔍 Анализирую блюдо...")
     
@@ -51,7 +50,7 @@ async def analyze_food_composition(message: Message, session: AsyncSession, stat
     await message.answer(
         formatted_response,
         parse_mode='HTML',
-        reply_markup=choose_action_kb
+        reply_markup=choose_analyze_kb
     )
     
     await state.clear()

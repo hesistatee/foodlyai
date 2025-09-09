@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher
-from handlers import start, product_composition, count_calories
+from handlers import start, product_composition, count_calories, subscribe_status, payment
 from config import config
 from database.db_middleware import DBSessionMiddleware
 from database.database import database
@@ -16,8 +16,8 @@ async def main() -> None:
     dp.include_router(start.router)
     dp.include_router(product_composition.router)
     dp.include_router(count_calories.router)
-    
-    dp['session'] = database.get_db()
+    dp.include_router(subscribe_status.router)
+    dp.include_router(payment.router)
     
     logging.basicConfig(
         filename='logs.log',
