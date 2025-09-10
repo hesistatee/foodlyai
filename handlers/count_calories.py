@@ -42,7 +42,7 @@ async def count_food_calories(message: Message, session: AsyncSession, state: FS
     status_message = await message.answer("🔍 Анализирую блюдо...")
     
     base64_image = await image_processor.process_telegram_photo(message=message)
-    response = food_analyzer.analyze_product_calories(base64_image=base64_image)
+    response = await food_analyzer.analyze_product_calories(base64_image=base64_image)
     
     formatted_response = format_calorie_analysis_response(response)
     await status_message.delete()

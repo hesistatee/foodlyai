@@ -2,7 +2,7 @@ from config import config
 import json
 import logging
 from static.texts import PROMPT_FOR_PRODUCT_COMPOSITION_ANALYZE, TEXT_FOR_PRODUCT_COMPOSITION_ANALYZE, PROMPT_FOR_CALORIE_ANALYSIS, TEXT_FOR_CALORIE_ANALYSIS
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 logger = logging.getLogger(__name__)
 
@@ -11,21 +11,21 @@ class FoodAnalyzer:
     """Анализатор состава продуктов питания с использованием POLZA_AI API."""
     
     def __init__(self):
-        """Инициализация клиента OpenAI с конфигурацией из config."""
-        self.client = OpenAI(
+        """Инициализация асинхронного клиента OpenAI с конфигурацией из config."""
+        self.client = AsyncOpenAI(
             base_url=config.POLZA_AI_BASE_URL,
             api_key=config.POLZA_AI_API_KEY,
         )
         self.model = config.GPT_MODEL
         self.max_tokens = config.GPT_MAX_TOKENS
         
-    def analyze_product_composition(self, base64_image: str) -> dict:
+    async def analyze_product_composition(self, base64_image: str) -> dict:
         """
-        Анализирует состав продукта по изображению.
+        Анализирует состав продукта по изображению (асинхронно).
         """
         try:
-            logging.info('Отправлен запрос на разбор фото')
-            response = self.client.chat.completions.create(
+            logging.info('Отправлен асинхронный запрос на разбор фото')
+            response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {
@@ -52,7 +52,7 @@ class FoodAnalyzer:
                 response_format={"type": "json_object"}
             )
             
-            logging.info('Фото разобрано')
+            logging.info('Фото разобрано асинхронно')
             description = response.choices[0].message.content
             return json.loads(description)
             
@@ -63,13 +63,13 @@ class FoodAnalyzer:
             logging.error(f'Ошибка при анализе продукта: {str(e)}')
             raise RuntimeError(f"Ошибка при анализе продукта: {e}") from e
         
-    def analyze_product_calories(self, base64_image: str) -> dict:
+    async def analyze_product_calories(self, base64_image: str) -> dict:
         """
-        Анализирует состав продукта по изображению.
+        Анализирует калорийность продукта по изображению (асинхронно).
         """
         try:
-            logging.info('Отправлен запрос на разбор фото')
-            response = self.client.chat.completions.create(
+            logging.info('Отправлен асинхронный запрос на разбор фото для анализа калорий')
+            response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {
@@ -96,7 +96,7 @@ class FoodAnalyzer:
                 response_format={"type": "json_object"}
             )
             
-            logging.info('Фото разобрано')
+            logging.info('Фото разобрано для анализа калорий')
             description = response.choices[0].message.content
             return json.loads(description)
             
@@ -104,6 +104,5 @@ class FoodAnalyzer:
             logging.error(f"Не удалось распарсить ответ от API: {str(e)}")
             raise ValueError("Не удалось распарсить ответ от API") from e
         except Exception as e:
-            logging.error(f'Ошибка при анализе продукта: {str(e)}')
-            raise RuntimeError(f"Ошибка при анализе продукта: {e}") from e
-        
+            logging.error(f'Ошибка при анализе калорий продукта: {str(e)}')
+            raise RuntimeError(f"Ошибка при анализе калорий продукта: {e}") from e

@@ -44,7 +44,7 @@ async def analyze_food_composition(message: Message, session: AsyncSession, stat
     status_message = await message.answer("🔍 Разбираю состав...")
     
     base64_image = await image_processor.process_telegram_photo(message=message)
-    response = food_analyzer.analyze_product_composition(base64_image=base64_image)
+    response = await food_analyzer.analyze_product_composition(base64_image=base64_image)
     
     formatted_response = format_analysis_response(response)
     await status_message.delete()
