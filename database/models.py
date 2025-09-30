@@ -23,7 +23,7 @@ class User(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True)
     tg_id: Mapped[int]
-    username: Mapped[str] = mapped_column(String(32))
+    username: Mapped[str] = mapped_column(String(32), nullable=True)
     number_of_requests: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
     

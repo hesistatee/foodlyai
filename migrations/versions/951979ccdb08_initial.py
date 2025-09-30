@@ -1,8 +1,8 @@
-"""Initial migration
+"""Initial
 
-Revision ID: 23560da48a01
+Revision ID: 951979ccdb08
 Revises: 
-Create Date: 2025-09-30 12:13:00.127462
+Create Date: 2025-09-30 21:45:20.221279
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '23560da48a01'
+revision: str = '951979ccdb08'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -33,7 +33,7 @@ def upgrade() -> None:
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('tg_id', sa.Integer(), nullable=False),
-    sa.Column('username', sa.String(length=32), nullable=False),
+    sa.Column('username', sa.String(length=32), nullable=True),
     sa.Column('number_of_requests', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('has_subscription', sa.Boolean(), nullable=False),
@@ -47,8 +47,8 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('tariff_id', sa.Integer(), nullable=False),
     sa.Column('amount', sa.Float(), nullable=False),
-    sa.Column('status', sa.Enum('PENDING', 'COMPLETED', 'CANCELLED', 'FAILED', name='orderstatus'), nullable=False),
-    sa.Column('payment_method', sa.Enum('STARS', name='paymentmethod'), nullable=True),
+    sa.Column('status', sa.String(length=20), nullable=False, server_default='PENDING'),
+    sa.Column('payment_method', sa.String(length=20), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.Column('completed_at', sa.DateTime(), nullable=True),
