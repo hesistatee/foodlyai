@@ -36,9 +36,3 @@ async def get_tariffs_keyboard(session: AsyncSession) -> InlineKeyboardMarkup:
         keyboard_buttons.append([button])
     
     return InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
-
-def payment_keyboard(price: int):  
-    builder = InlineKeyboardBuilder()  
-    builder.button(text=f"Оплатить {price} ⭐️", pay=True)  
-  
-    return builder.as_markup()

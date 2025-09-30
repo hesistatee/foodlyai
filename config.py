@@ -21,6 +21,6 @@ class Settings:
     MAIN_SUBSCRIPTION_DAYS: int = int(os.getenv("MAIN_SUBSCRIPTION_DAYS"))
     
     # Payment
-    PAYMASTER_PAYMENT_TOKEN: str = os.getenv('PAYMASTER_PAYMENT_TOKEN')
+    YOOKASSA_PAYMENT_TOKEN: str = os.getenv('YOOKASSA_PAYMENT_TOKEN')
 
 settings = Settings()

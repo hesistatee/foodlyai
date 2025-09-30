@@ -1,10 +1,11 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, LabeledPrice, PreCheckoutQuery
-from utils.keyboards import get_tariffs_keyboard, payment_keyboard, choose_analyze_kb
+from utils.keyboards import get_tariffs_keyboard, choose_analyze_kb
 import logging
 from database.repositories import UserRepository, TariffRepository, OrderRepository, OrderStatus
 from database.models import PaymentMethod
 from sqlalchemy.ext.asyncio import AsyncSession
+from config import settings
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -52,20 +53,19 @@ async def handle_tariff_selection(callback: CallbackQuery, session: AsyncSession
         user_id=tg_id,
         tariff_id=tariff.id,
         amount=tariff.price,
-        payment_method=PaymentMethod.STARS
+        payment_method=PaymentMethod.YOOKASSA
     )
     
-    prices = [LabeledPrice(label="XTR", amount=tariff.price)]
+    prices = [LabeledPrice(label="Оплата", amount=tariff.price * 100)]
     
     logger.info(f"Sending invoice for order {order.id}")
     await callback.message.answer_invoice(
         title=tariff.name,
         description=tariff.description,
         prices=prices,
-        provider_token="",
+        provider_token=settings.YOOKASSA_PAYMENT_TOKEN,
         payload=str(order.id),
-        currency="XTR",
-        reply_markup=payment_keyboard(price=tariff.price)
+        currency="RUB",
     )
     
 @router.pre_checkout_query(lambda query: True)
@@ -108,8 +108,7 @@ async def successful_payment(message: Message, session: AsyncSession):
             
             await message.answer(
                 f"✅ Оплата прошла успешно!\n"
-                f"🎉 Ваша подписка активирована на {tariff.days} дней\n"
-                f"💳 Сумма: {successful_payment.total_amount} ⭐️",
+                f"🎉 Ваша подписка активирована на {tariff.days} дней\n",
                 reply_markup=choose_analyze_kb
             )
         else:

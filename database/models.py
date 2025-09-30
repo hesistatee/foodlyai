@@ -16,6 +16,7 @@ class OrderStatus(enum.Enum):
 
 class PaymentMethod(enum.Enum):
     STARS = "stars"
+    YOOKASSA = 'yookassa'
     
 class User(Base):
     __tablename__ = "users"

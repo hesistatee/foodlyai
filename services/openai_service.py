@@ -1,4 +1,4 @@
-from config import config
+from config import settings
 import json
 import logging
 from openai import AsyncOpenAI
@@ -11,11 +11,11 @@ class OpenAIService:
     def __init__(self):
         """Инициализация асинхронного клиента OpenAI с конфигурацией из config."""
         self.client = AsyncOpenAI(
-            base_url=config.POLZA_AI_BASE_URL,
-            api_key=config.POLZA_AI_API_KEY,
+            base_url=settings.POLZA_AI_BASE_URL,
+            api_key=settings.POLZA_AI_API_KEY,
         )
-        self.model = config.GPT_MODEL
-        self.max_tokens = config.GPT_MAX_TOKENS
+        self.model = settings.GPT_MODEL
+        self.max_tokens = settings.GPT_MAX_TOKENS
         
     async def _send_image_request(self, content: str, text: str, base64_image: str):
         try:
