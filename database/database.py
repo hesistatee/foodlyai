@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from .models import Base
-from config import config
+from config import settings
 
 
 class Database:
     def __init__(self):
         self.engine = create_async_engine(
-            url=config.DATABASE_URL,
+            url=settings.DATABASE_URL,
             echo=True,
             pool_size=20,
             max_overflow=10,

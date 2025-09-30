@@ -5,7 +5,7 @@ from static.texts import WELCOME_TEXT
 from utils.keyboards import choose_analyze_kb
 from database.repositories import UserRepository
 from sqlalchemy.ext.asyncio import AsyncSession
-from config import config
+from config import settings
 
 router = Router()
 
@@ -20,7 +20,7 @@ async def cmd_start(message: Message, session: AsyncSession) -> None:
         username=message.from_user.username
     )
     if create:
-        await repo.update_subscription(telegram_id=telegram_id, days=config.TRIAL_DAYS)
+        await repo.update_subscription(telegram_id=telegram_id, days=settings.TRIAL_DAYS)
     
     await message.answer(
         WELCOME_TEXT,

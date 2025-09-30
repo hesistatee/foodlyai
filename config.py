@@ -6,7 +6,7 @@ load_dotenv()
 
 
 @dataclass
-class Config:
+class Settings:
     BOT_TOKEN: str = os.getenv('BOT_TOKEN')
     POLZA_AI_API_KEY: str = os.getenv('POLZA_AI_API_KEY')
     POLZA_AI_BASE_URL: str = os.getenv('POLZA_AI_BASE_URL')
@@ -23,4 +23,4 @@ class Config:
     # Payment
     PAYMASTER_PAYMENT_TOKEN: str = os.getenv('PAYMASTER_PAYMENT_TOKEN')
 
-config = Config()
+settings = Settings()

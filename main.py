@@ -2,13 +2,13 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher
 from handlers import start, product_composition, count_calories, subscribe_status, payment
-from config import config
+from config import settings
 from database.db_middleware import DBSessionMiddleware
 from database.database import database
 
 
 async def main() -> None:
-    bot = Bot(token=config.BOT_TOKEN)
+    bot = Bot(token=settings.BOT_TOKEN)
     dp = Dispatcher()
     
     dp.update.middleware(DBSessionMiddleware())
