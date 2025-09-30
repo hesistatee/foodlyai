@@ -25,7 +25,8 @@ async def check_subscription_status(message: Message, session: AsyncSession) -> 
     if user.is_admin:
         await message.answer(
             "🎯 Вы администратор\n"
-            "Вам доступно неограниченное количество запросов"
+            "Вам доступно неограниченное количество запросов",
+            reply_markup=subscription_keyboard
         )
     elif not await repo.check_subscription_active(telegram_id=tg_id):
         await message.answer(
