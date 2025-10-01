@@ -3,7 +3,7 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from services.image_processor import ImageProcessor
 from services.food_analyzer_service import FoodAnalyzer
-from static.texts import SCAN_PRODUCT_COMPOSITION_TEXT
+from static.texts import SCAN_PRODUCT_COMPOSITION_TEXT, OPENAI_SERVICE_ERROR_MESSAGE
 from database.repositories import UserRepository
 from utils.keyboards import choose_analyze_kb
 from utils.states import MainGroup
@@ -44,7 +44,15 @@ async def analyze_food_composition(message: Message, session: AsyncSession, stat
     status_message = await message.answer("🔍 Разбираю состав...")
     
     base64_image = await image_processor.process_telegram_photo(message=message)
-    response = await food_analyzer.analyze_product_composition(base64_image=base64_image)
+    try:
+        response = await food_analyzer.analyze_product_composition(base64_image=base64_image)
+    except Exception:
+        await status_message.delete()
+        await message.answer(
+            OPENAI_SERVICE_ERROR_MESSAGE,
+            parse_mode='HTML'
+        )
+        await state.clear()
     
     formatted_response = format_analysis_response(response)
     await status_message.delete()

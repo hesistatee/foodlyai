@@ -3,7 +3,7 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from services.image_processor import ImageProcessor
 from services.food_analyzer_service import FoodAnalyzer
-from static.texts import COUNT_THE_NUMBER_OF_CALORIES_TEXT
+from static.texts import COUNT_THE_NUMBER_OF_CALORIES_TEXT, OPENAI_SERVICE_ERROR_MESSAGE
 from utils.states import MainGroup
 from utils.keyboards import choose_analyze_kb
 from database.repositories import UserRepository
@@ -42,8 +42,16 @@ async def count_food_calories(message: Message, session: AsyncSession, state: FS
     status_message = await message.answer("🔍 Анализирую блюдо...")
     
     base64_image = await image_processor.process_telegram_photo(message=message)
-    response = await food_analyzer.analyze_product_calories(base64_image=base64_image)
-    
+    try:
+        response = await food_analyzer.analyze_product_calories(base64_image=base64_image)
+    except Exception:
+        await status_message.delete()
+        await message.answer(
+            OPENAI_SERVICE_ERROR_MESSAGE,
+            parse_mode='HTML'
+        )
+        await state.clear()
+        
     formatted_response = format_calorie_analysis_response(response)
     await status_message.delete()
     
