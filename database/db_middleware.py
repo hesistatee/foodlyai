@@ -1,15 +1,17 @@
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
-from typing import Callable, Dict, Any, Awaitable
+from typing import Callable, Any
+from collections.abc import Awaitable
 from database.database import database
+
 
 class DBSessionMiddleware(BaseMiddleware):
     async def __call__(
         self,
-        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],
         event: TelegramObject,
-        data: Dict[str, Any]
+        data: dict[str, Any],
     ) -> Any:
         async for session in database.get_db():
-            data['session'] = session
+            data["session"] = session
             return await handler(event, data)

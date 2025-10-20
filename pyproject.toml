@@ -1,0 +1,10 @@
+[tool.basedpyright]
+reportExplicitAny = false
+reportMissingTypeStubs = false
+reportMissingImports = true
+reportImplicitOverride = false
+reportAny = false
+reportUnusedCallResult = false
+reportOptionalMemberAccess = false
+reportImplicitStringConcatenation = false
+reportUnknownLambdaType = false
