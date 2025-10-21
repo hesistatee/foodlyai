@@ -1,8 +1,8 @@
-"""Initial
+"""initial commit
 
-Revision ID: 951979ccdb08
+Revision ID: a8173e18a8f6
 Revises: 
-Create Date: 2025-09-30 21:45:20.221279
+Create Date: 2025-10-20 17:24:49.687622
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '951979ccdb08'
+revision: str = 'a8173e18a8f6'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -47,8 +47,8 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('tariff_id', sa.Integer(), nullable=False),
     sa.Column('amount', sa.Float(), nullable=False),
-    sa.Column('status', sa.String(length=20), nullable=False, server_default='PENDING'),
-    sa.Column('payment_method', sa.String(length=20), nullable=True),
+    sa.Column('status', sa.Enum('PENDING', 'COMPLETED', 'CANCELLED', 'FAILED', name='orderstatus'), nullable=False),
+    sa.Column('payment_method', sa.Enum('STARS', 'YOOKASSA', name='paymentmethod'), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.Column('completed_at', sa.DateTime(), nullable=True),
