@@ -46,10 +46,12 @@ async def handle_tariff_selection(callback: CallbackQuery, session: AsyncSession
 
     tariff_id = int(callback.data.split("_")[1])
     tg_id = callback.from_user.id
+    user_repo = UserRepository(session=session)
     order_repo = OrderRepository(session=session)
     tariff_repo = TariffRepository(session=session)
 
     logger.debug(f"Getting tariff with ID: {tariff_id}")
+    user = await user_repo.get_user(telegram_id=tg_id)
     tariff = await tariff_repo.get_tariff(tariff_id=tariff_id)
 
     if not tariff:
@@ -61,7 +63,7 @@ async def handle_tariff_selection(callback: CallbackQuery, session: AsyncSession
         f"Creating order for user {tg_id}, tariff {tariff_id}, amount {tariff.price}"
     )
     order = await order_repo.create_order(
-        user_id=tg_id,
+        user_id=user.id,
         tariff_id=tariff.id,
         amount=tariff.price,
         payment_method=PaymentMethod.YOOKASSA,
