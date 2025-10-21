@@ -1,5 +1,4 @@
 from typing import Any
-from typing_extensions import Dict
 from config import settings
 import json
 import logging
@@ -19,9 +18,9 @@ class OpenAIService:
         self.model: str = settings.GPT_MODEL
         self.max_tokens: int = settings.GPT_MAX_TOKENS
 
-    async def _send_image_request(
+    async def send_image_request(
         self, content: str, text: str, base64_image: str | None
-    ) -> dict[Any, Any]:
+    ) -> dict[str, Any]:
         try:
             logging.info("Отправлен асинхронный запрос на разбор фото")
             response = await self.client.chat.completions.create(

@@ -1,19 +1,19 @@
 from typing import Any
+
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.repositories import UserRepository
-from services.food_analyzer_service import FoodAnalyzer
-from services.image_processor import ImageProcessor
+from services import FoodAnalyzer, ImageProcessor, OpenAIService
 from static.texts import OPENAI_SERVICE_ERROR_MESSAGE, SCAN_PRODUCT_COMPOSITION_TEXT
 from utils.keyboards import choose_analyze_kb
 from utils.states import MainGroup
 
 router = Router()
 image_processor = ImageProcessor()
-food_analyzer = FoodAnalyzer()
+food_analyzer = FoodAnalyzer(openai_service=OpenAIService())
 
 
 @router.message(F.text == SCAN_PRODUCT_COMPOSITION_TEXT)
