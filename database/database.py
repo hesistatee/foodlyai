@@ -4,8 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from config import settings
 
-from .models import Base
-
 
 @final
 class Database:
@@ -28,14 +26,6 @@ class Database:
             yield session
         finally:
             await session.close()
-
-    async def init_db(self):
-        async with self.engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-
-    async def drop_tables(self):
-        async with self.engine.begin() as conn:
-            await conn.run_sync(Base.metadata.drop_all)
 
 
 database = Database()

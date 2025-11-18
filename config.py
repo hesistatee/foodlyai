@@ -22,7 +22,7 @@ class Settings:
 
     # Payment
     YOOKASSA_PAYMENT_TOKEN: str = os.getenv("YOOKASSA_PAYMENT_TOKEN", "")
-    
+
     # Database
     DB: str = os.getenv("DB", "")
     DB_DRIVER: str = os.getenv("DB_DRIVER", "")
@@ -31,7 +31,7 @@ class Settings:
     DB_HOST: str = os.getenv("DB_HOST", "")
     DB_PORT: int = int(os.getenv("DB_PORT", ""))
     DB_NAME: str = os.getenv("DB_NAME", "")
-    
+
     @property
     def DATABASE_URL(self):
         return f"{self.DB}+{self.DB_DRIVER}://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"

@@ -1,9 +1,10 @@
-from typing import Any
-from config import settings
 import json
 import logging
+from typing import Any
+
 from openai import AsyncOpenAI
 
+from config import settings
 
 logger = logging.getLogger(__name__)
 

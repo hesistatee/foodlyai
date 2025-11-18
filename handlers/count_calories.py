@@ -5,54 +5,37 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from database.models import User
 from database.repositories import UserRepository
+from keyboards import main_kb
 from services import FoodAnalyzer, ImageProcessor, OpenAIService
-from static.texts import COUNT_THE_NUMBER_OF_CALORIES_TEXT, OPENAI_SERVICE_ERROR_MESSAGE
-from utils.keyboards import choose_analyze_kb
-from utils.states import MainGroup
+from states import MainGroup
+from static.texts import OPENAI_SERVICE_ERROR_MESSAGE, PARSE_PRODUCT_TEXT
+from utils.decorators import login_required, subscribe_required
 
 router = Router()
 image_processor = ImageProcessor()
 food_analyzer = FoodAnalyzer(openai_service=OpenAIService())
 
 
-@router.message(F.text == COUNT_THE_NUMBER_OF_CALORIES_TEXT)
-async def message_before_count(
-    message: Message, session: AsyncSession, state: FSMContext
-):
-    tg_id = message.from_user.id if message.from_user else None
-    repo = UserRepository(session=session)
-    user = await repo.get_user(telegram_id=tg_id)
-
-    if not user:
-        await message.answer(
-            "👋 Привет! Кажется, мы еще не знакомы.\nДля начала работы воспользуйтесь командой /start"
-        )
-        return
-    elif (
-        not await repo.check_subscription_active(telegram_id=tg_id)
-        and not user.is_admin
-    ):
-        await message.answer(
-            "⚠️ Ваша подписка завершилась\n\nЧтобы продолжить пользоваться всеми возможностями, пожалуйста, продлите подписку 💫"
-        )
-        return
-
+@router.message(F.text == PARSE_PRODUCT_TEXT)
+@login_required
+@subscribe_required
+async def message_before_count(message: Message, user: User, state: FSMContext):
     await state.set_state(MainGroup.count_the_number_of_calories_state)
     await message.answer("Отправь фото блюда")
 
 
 @router.message(MainGroup.count_the_number_of_calories_state)
 async def count_food_calories(
-    message: Message, session: AsyncSession, state: FSMContext
+    message: Message, user: User, session: AsyncSession, state: FSMContext
 ) -> None:
     if not message.photo:
         await message.answer("Отправьте фото блюда/продукта")
         return
-    tg_id = message.from_user.id if message.from_user else None
     repo = UserRepository(session=session)
 
-    await repo.update_number_of_requests(telegram_id=tg_id)
+    await repo.update_number_of_requests(user=user)
 
     status_message = await message.answer("🔍 Анализирую блюдо...")
 
@@ -64,7 +47,7 @@ async def count_food_calories(
         formatted_response = format_calorie_analysis_response(response)
         await status_message.delete()
         await message.answer(
-            formatted_response, parse_mode="HTML", reply_markup=choose_analyze_kb
+            formatted_response, parse_mode="HTML", reply_markup=main_kb
         )
     except Exception:
         await status_message.delete()

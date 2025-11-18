@@ -1,8 +1,11 @@
-from datetime import datetime
 import enum
+from datetime import date, datetime
 from typing import final
+
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, DateTime, Boolean, ForeignKey, Enum, Text
+
+from utils.formulas import harris_benedict_formula
 
 
 class Base(DeclarativeBase):
@@ -37,15 +40,67 @@ class User(Base):
 
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    fitness_profile: Mapped["FitnessProfile"] = relationship(
+        "FitnessProfile", back_populates="user"
+    )
+    foods: Mapped[list["Food"]] = relationship("Food", back_populates="user")
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="user")
 
-    def is_subscription_active(self) -> bool:
-        if not self.has_subscription:
-            return False
-        elif self.has_subscription and datetime.now() > self.subscription_end:
-            self.has_subscription = False
-            return False
+    @property
+    def subscription_is_active(self):
         return datetime.now() < self.subscription_end
+
+
+@final
+class FitnessProfile(Base):
+    __tablename__ = "fitness_profiles"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), unique=True, nullable=False
+    )
+    current_weight: Mapped[int] = mapped_column(nullable=False)
+    desired_weight: Mapped[int] = mapped_column(nullable=False)
+    height: Mapped[int] = mapped_column(nullable=False)
+    age: Mapped[int] = mapped_column(nullable=False)
+    gender: Mapped[str] = mapped_column(String(1), nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        default=datetime.now(), onupdate=datetime.now()
+    )
+
+    user: Mapped["User"] = relationship("User", back_populates="fitness_profile")
+
+    @property
+    def calorie_norm_for_weight_loss(self) -> int:
+        return harris_benedict_formula(
+            self.current_weight, self.height, self.age, self.gender
+        )
+
+
+@final
+class Food(Base):
+    __tablename__ = "foods"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    name: Mapped[str] = mapped_column(String(32))
+    calories: Mapped[int] = mapped_column(nullable=False)
+    protein: Mapped[int] = mapped_column(nullable=False)
+    fat: Mapped[int] = mapped_column(nullable=False)
+    carbs: Mapped[int] = mapped_column(nullable=False)
+
+    number_of_servings: Mapped[int] = mapped_column(nullable=False, default=1)
+
+    last_eaten_at: Mapped[date] = mapped_column(default=date.today())
+
+    updated_at: Mapped[datetime] = mapped_column(
+        default=datetime.now(), onupdate=datetime.now()
+    )
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now())
+
+    user: Mapped["User"] = relationship("User", back_populates="foods")
 
 
 @final

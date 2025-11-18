@@ -1,8 +1,9 @@
 import base64
+import logging
 import os
 from datetime import datetime
+
 from aiogram.types import Message
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +13,7 @@ class ImageProcessor:
         try:
             logging.info("Началась обработка фото")
             file_id = message.photo[-1].file_id if message.photo else None
-            if file_id:
+            if file_id and message.bot:
                 file = await message.bot.get_file(file_id)
                 file_path = file.file_path
                 if file_path:
